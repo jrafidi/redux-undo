@@ -206,14 +206,16 @@ export default function undoable (reducer, rawConfig = {}) {
           return history
         }
 
+        const oldFuture = history.future;
         // insert before filtering because the previous action might not have
         // been filtered and `insert` checks for `wasFiltered` anyway
         history = insert(history, res, config.limit)
 
         if (typeof config.filter === 'function' && !config.filter(action, res, history)) {
+          history.past.pop();
           const nextState = {
-            ...history,
-            wasFiltered: true,
+            past: history.past,
+            future: oldFuture,
             present: res
           }
           debug.log('filter prevented action, not storing it')
